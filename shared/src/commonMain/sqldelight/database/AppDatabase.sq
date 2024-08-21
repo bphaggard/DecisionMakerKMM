@@ -1,0 +1,30 @@
+CREATE TABLE Decision (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL
+);
+
+insertDecision:
+INSERT INTO Decision(id, title)
+VALUES (?, ?);
+
+getAllDecisions:
+SELECT *
+FROM Decision;
+
+getDecisionById:
+SELECT *
+FROM Decision
+WHERE id = ?;
+
+getRandomDecision:
+SELECT title
+FROM Decision
+ORDER BY RANDOM()
+LIMIT 1;
+
+deleteDecisionById:
+DELETE FROM Decision
+WHERE id = ?;
+
+deleteAllDecisions:
+DELETE FROM Decision;
