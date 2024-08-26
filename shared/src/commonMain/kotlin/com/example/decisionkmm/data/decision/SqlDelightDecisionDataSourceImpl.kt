@@ -8,10 +8,7 @@ class SqlDelightDecisionDataSourceImpl(db: AppDatabase): DecisionDataSource {
     private val queries = db.appDatabaseQueries
 
     override suspend fun insertDecision(decision: Decision) {
-        queries.insertDecision(
-            id = decision.id,
-            title = decision.title
-        )
+        queries.insertDecision(decision.id, decision.title)
     }
 
     override suspend fun getDecisionById(id: Long): Decision? {

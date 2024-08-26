@@ -14,19 +14,30 @@ class DecisionViewModel(
     private val _decisions = MutableStateFlow<List<Decision>>(emptyList()) //mutable
     val decisions: StateFlow<List<Decision>> get() = _decisions.asStateFlow() //immutable
 
-    init {
-        loadDecisions()
-    }
+    private val _newDecision = MutableStateFlow("")
+    val newDecision: StateFlow<String> get() = _newDecision
 
-    private fun loadDecisions() {
+    private val _randomDecision = MutableStateFlow("")
+    val randomDecision: StateFlow<String> get() = _randomDecision
+
+    fun loadDecisions() {
         scope.launch {
             _decisions.value = decisionDataSource.getAllDecisions()
         }
     }
 
-    fun addDecision(decision: Decision) {
+    fun onNewDecisionChange(newText: String) {
+        _newDecision.value = newText
+    }
+
+    fun addDecision() {
         scope.launch {
-            decisionDataSource.insertDecision(decision)
+            val decisionTitle = _newDecision.value
+            if (decisionTitle.isNotEmpty()) {
+                decisionDataSource.insertDecision(Decision(id = null, title = decisionTitle))
+                _newDecision.value = ""
+                loadDecisions()
+            }
         }
     }
 
@@ -38,7 +49,8 @@ class DecisionViewModel(
 
     fun getRandomDecision() {
         scope.launch {
-
+            val decision = decisionDataSource.getRandomDecision()
+            _randomDecision.value = decision ?: "No decision selected"
         }
     }
 

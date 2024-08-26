@@ -1,6 +1,8 @@
 package com.example.decisionkmm.android
 
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,9 +12,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -25,6 +31,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,11 +53,17 @@ import org.koin.androidx.compose.koinViewModel
 fun MainScreen(
     decisionViewModel: DecisionViewModel = koinViewModel()
 ) {
+    val decisionsList = decisionViewModel.decisions.collectAsState()
+    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val heightModifier = if (configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
         Modifier.fillMaxHeight(0.2f)
     } else {
         Modifier.fillMaxHeight(0.4f)
+    }
+
+    LaunchedEffect(key1 = true) {
+        decisionViewModel.loadDecisions()
     }
 
     Scaffold(
@@ -68,8 +83,8 @@ fun MainScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     //Input Value
-                    var enteredValue by remember { mutableStateOf("") }
-                    InputValue(text = enteredValue) { value -> enteredValue = value}
+                    val newDecision by decisionViewModel.newDecision.collectAsState()
+                    InputValue(text = newDecision) { value -> decisionViewModel.onNewDecisionChange(value)}
                     //Add Button
                     Button(
                         modifier = Modifier.height(55.dp),
@@ -81,13 +96,11 @@ fun MainScreen(
                         colors = ButtonDefaults.buttonColors(Color(0xFFB0BFA1)),
                         shape = RoundedCornerShape(15.dp),
                         onClick = {
-//                    if (enteredValue.isNotBlank()){
-//                        homeViewModel.addNote(NoteEntity(text = enteredValue))
-//                    } else{
-//                        coroutineScope.launch {
-//                            Toast.makeText(context,"Enter value cannot be empty!",Toast.LENGTH_LONG).show()
-//                        }
-//                    }
+                    if (newDecision.isNotBlank()){
+                        decisionViewModel.addDecision()
+                    } else{
+                        Toast.makeText(context,"Write some decision!",Toast.LENGTH_LONG).show()
+                    }
                         }
                     )
                     {
@@ -107,42 +120,43 @@ fun MainScreen(
                         .fillMaxWidth(0.9f)
                         .fillMaxHeight(0.5f)
                 ) {
-//            LazyColumn{
-//                items(noteListState.value.size){index ->
-//                    val note = noteListState.value[index]
-//                    Box(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(horizontal = 10.dp)
-//                            .height(45.dp)
-//                    ) {
-//                        Row (
-//                            modifier = Modifier
-//                                .fillMaxWidth(),
-//                            horizontalArrangement = Arrangement.SpaceBetween,
-//                            verticalAlignment = Alignment.CenterVertically
-//                        ){
-//                            Text(
-//                                modifier = Modifier
-//                                    .fillMaxWidth(0.85f)
-//                                    .horizontalScroll(rememberScrollState()),
-//                                text = note.text,
-//                                maxLines = 1
-//                            )
-//                            IconButton(
-//                                onClick = {  },
-//                                modifier = Modifier.size(30.dp)) {
-//                                Icon(
-//                                    imageVector = Icons.Outlined.Delete,
-//                                    contentDescription = "delete",
-//                                    tint = Color.Red)
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            LazyColumn{
+                items(decisionsList.value.size){index ->
+                    val decision = decisionsList.value[index]
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp)
+                            .height(45.dp)
+                    ) {
+                        Row (
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.85f)
+                                    .horizontalScroll(rememberScrollState()),
+                                text = decision.title,
+                                maxLines = 1
+                            )
+                            IconButton(
+                                onClick = {  },
+                                modifier = Modifier.size(30.dp)) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Delete,
+                                    contentDescription = "delete",
+                                    tint = Color.Red)
+                            }
+                        }
+                    }
+                }
+            }
                 }
                 //Result Card
+                val randomDecision by decisionViewModel.randomDecision.collectAsState()
                 Card(
                     elevation = CardDefaults.cardElevation(0.dp),
                     modifier = Modifier
@@ -168,7 +182,7 @@ fun MainScreen(
                             )
                         }
                         Text(
-                            text =  "",
+                            text =  randomDecision,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
@@ -192,10 +206,9 @@ fun MainScreen(
                         colors = ButtonDefaults.buttonColors(Color(0xFFB0BFA1)),
                         shape = RoundedCornerShape(15.dp),
                         onClick = {
-//                    coroutineScope.launch {
-//                        homeViewModel.deleteAll()
-//                        homeViewModel.chosenNote.value = ""}
-                        }) {
+                            decisionViewModel.deleteAllDecisions()
+                        }
+                    ) {
                         Text(
                             text = "CLEAR LIST",
                             fontWeight = FontWeight.Bold,
@@ -213,12 +226,11 @@ fun MainScreen(
                         colors = ButtonDefaults.buttonColors(Color(0xFFB0BFA1)),
                         shape = RoundedCornerShape(15.dp),
                         onClick = {
-//                    coroutineScope.launch {
-//                        if (noteListState.value.isEmpty()){
-//                            homeViewModel.chosenNote.value ?: ""
-//                            Toast.makeText(context, "List is Empty", Toast.LENGTH_LONG).show()
-//                        } else { homeViewModel.chooseNote() }
-//                    }
+                            if (decisionsList.value.isEmpty()) {
+                                Toast.makeText(context, "No decisions to select", Toast.LENGTH_SHORT).show()
+                            } else {
+                                decisionViewModel.getRandomDecision()
+                            }
                         }
                     ) {
                         Text(
@@ -235,10 +247,9 @@ fun MainScreen(
 
 @Composable
 fun InputValue(text: String, onValueChange: (String) -> Unit) {
-    var inputValue by remember { mutableStateOf(text) }
 
     TextField(
-        value = inputValue,
+        value = text,
         modifier = Modifier.fillMaxWidth(0.7f),
         placeholder = { Text("Enter value") },
         colors = TextFieldDefaults.colors(
@@ -247,21 +258,19 @@ fun InputValue(text: String, onValueChange: (String) -> Unit) {
             unfocusedIndicatorColor = Color.Transparent,
         ),
         trailingIcon = {
-            when {
-                inputValue.isNotEmpty() -> IconButton(
+            if (text.isNotEmpty()) {
+                IconButton(
                     onClick = {
-                        inputValue = ""
-                        onValueChange("") // Clear the value in the onValueChange callback
+                        onValueChange("")
                     }
                 ) {
-                    Icon(Icons.Default.Clear, contentDescription = "clear text")
+                    Icon(Icons.Default.Clear, contentDescription = null)
                 }
             }
         },
         shape = RoundedCornerShape(15.dp),
         singleLine = true,
         onValueChange = { newInputValue ->
-            inputValue = newInputValue
             // Update the value in the onValueChange callback
             onValueChange(newInputValue)
         }
