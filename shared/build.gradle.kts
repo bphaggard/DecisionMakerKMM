@@ -30,15 +30,19 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.runtime)
             implementation(libs.koin.core)
+            implementation(libs.lifecycle.viewmodel)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
         androidMain.dependencies {
             implementation(libs.android.driver)
+            implementation(libs.koin.android)
+            implementation(libs.androidx.navigation.compose)
         }
         iosMain.dependencies {
             implementation(libs.native.driver)
+            implementation(libs.koin.core)
         }
     }
 }

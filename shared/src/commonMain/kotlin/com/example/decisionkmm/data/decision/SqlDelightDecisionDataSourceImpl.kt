@@ -4,7 +4,7 @@ import com.example.decisionkmm.database.AppDatabase
 import com.example.decisionkmm.domain.decision.Decision
 import com.example.decisionkmm.domain.decision.DecisionDataSource
 
-class SqlDelightDecisionDataSource(db: AppDatabase): DecisionDataSource {
+class SqlDelightDecisionDataSourceImpl(db: AppDatabase): DecisionDataSource {
     private val queries = db.appDatabaseQueries
 
     override suspend fun insertDecision(decision: Decision) {
