@@ -34,7 +34,7 @@ class DecisionViewModel(
         scope.launch {
             val decisionTitle = _newDecision.value
             if (decisionTitle.isNotEmpty()) {
-                decisionDataSource.insertDecision(Decision(id = null, title = decisionTitle))
+                decisionDataSource.insertDecision(Decision(title = decisionTitle))
                 _newDecision.value = ""
                 loadDecisions()
             }
@@ -44,6 +44,7 @@ class DecisionViewModel(
     fun deleteDecisionById(id: Long) {
         scope.launch {
             decisionDataSource.deleteDecisionById(id)
+            loadDecisions()
         }
     }
 
@@ -57,6 +58,7 @@ class DecisionViewModel(
     fun deleteAllDecisions() {
         scope.launch {
             decisionDataSource.deleteAllDecisions()
+            loadDecisions()
         }
     }
 }

@@ -143,7 +143,11 @@ fun MainScreen(
                                 maxLines = 1
                             )
                             IconButton(
-                                onClick = {  },
+                                onClick = {
+                                          decision.id?.let { id ->
+                                              decisionViewModel.deleteDecisionById(id)
+                                          }
+                                },
                                 modifier = Modifier.size(30.dp)) {
                                 Icon(
                                     imageVector = Icons.Outlined.Delete,
