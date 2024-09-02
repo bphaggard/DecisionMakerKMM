@@ -18,6 +18,7 @@ struct DecisionListScreen: View {
     
     init(decisionDataSource: DecisionDataSource) {
         self.decisionDataSource = decisionDataSource
+        _viewModel = StateObject(wrappedValue: DecisionViewModel(decisionDataSource: decisionDataSource))
     }
     
     var body: some View {
@@ -36,14 +37,14 @@ struct DecisionListScreen: View {
                     HStack {
                         TextField(
                             "Enter Decision",
-                            text: $decisionValue
+                            text: $viewModel.decisionValue
                         )
                         .padding(.horizontal, 20)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled(true)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         
-                        Button("Add Decision", systemImage: "plus", action: {})
+                        Button("Add Decision", systemImage: "plus", action: { viewModel.saveDecision() })
                             .padding(.horizontal, 20)
                             .labelStyle(.iconOnly)
                             .foregroundColor(.black)
@@ -61,7 +62,7 @@ struct DecisionListScreen: View {
                 .overlay(
                     VStack {
                         List {
-                            ForEach(viewModel.filteredDecisions, id: \.self.id) { decision in
+                            ForEach(viewModel.filteredDecisions, id: \.id) { decision in
                                 Button(action: {}) {
                                     DecisionItem(decision: decision, onDeleteClick: {
                                         viewModel.deleteDecisionById(id: decision.id?.int64Value)
@@ -99,7 +100,7 @@ struct DecisionListScreen: View {
                         .frame(width: UIScreen.main.bounds.width * 0.27) // 30% width of the card
 
                         // Right side text
-                            Text(randomDecision)
+                        Text(viewModel.decisionTitle)
                                 .font(.system(size: 20))
                                 .fontWeight(.bold)
                                 .padding(.horizontal, 15)
@@ -110,9 +111,8 @@ struct DecisionListScreen: View {
             Spacer(minLength: 10)
             // Clear and Choose Button
             HStack {
-                Button(action: {
-                    
-                }) {
+                Button(action: {viewModel.deleteAllDecisions()}
+                ) {
                     Text("Clear List")
                         .foregroundColor(.black)
                         .padding()
@@ -120,9 +120,8 @@ struct DecisionListScreen: View {
                         .cornerRadius(10)
                 }
                 Spacer()
-                Button(action: {
-                
-                }) {
+                Button(action: {viewModel.getRandomDecision()}
+                ) {
                     Text("Choose")
                         .foregroundColor(.black)
                         .padding()

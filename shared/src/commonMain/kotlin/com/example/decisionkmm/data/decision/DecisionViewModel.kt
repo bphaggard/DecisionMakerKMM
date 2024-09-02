@@ -59,6 +59,7 @@ class DecisionViewModel(
         scope.launch {
             decisionDataSource.deleteAllDecisions()
             loadDecisions()
+            _randomDecision.value = ""
         }
     }
 }

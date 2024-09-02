@@ -21,7 +21,7 @@ struct DecisionItem: View {
                     .fontWeight(.semibold)
                 Spacer()
                 Button(action: onDeleteClick) {
-                    Image(systemName: "xmark").foregroundColor(.black)
+                    Image(systemName: "trash").foregroundColor(.red)
                 }
             }
         }
