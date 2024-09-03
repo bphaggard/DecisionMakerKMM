@@ -11,10 +11,10 @@ import shared
 
 struct DecisionListScreen: View {
     private var decisionDataSource: DecisionDataSource
-    @StateObject var viewModel = DecisionViewModel(decisionDataSource: nil)
-    let randomDecision = "Your Decision"
+    @StateObject var viewModel: DecisionViewModel
     
     @State private var decisionValue: String = ""
+    let randomDecision = "Your Decision"
     
     init(decisionDataSource: DecisionDataSource) {
         self.decisionDataSource = decisionDataSource
@@ -63,11 +63,11 @@ struct DecisionListScreen: View {
                     VStack {
                         List {
                             ForEach(viewModel.filteredDecisions, id: \.id) { decision in
-                                Button(action: {}) {
-                                    DecisionItem(decision: decision, onDeleteClick: {
-                                        viewModel.deleteDecisionById(id: decision.id?.int64Value)
-                                    })
-                                }
+                                DecisionItem(decision: decision, onDeleteClick: {
+                                    viewModel.deleteDecisionById(id: decision.id?.int64Value)
+                                })
+                                .buttonStyle(PlainButtonStyle())
+                                .listRowBackground(Color(hex: "E1E4D5"))
                             }
                         }
                         .onAppear {
@@ -76,7 +76,7 @@ struct DecisionListScreen: View {
                         .listStyle(.plain)
                         .listRowSeparator(.hidden)
                     }
-                        .padding()
+                        .padding(5)
                 )
             Spacer(minLength: 10)
             // Result Row
@@ -89,15 +89,15 @@ struct DecisionListScreen: View {
                 .overlay(
                     HStack {
                         ZStack {
-                            Color(hex: "#B0BFA1") // Use a custom hex color
+                            Color(hex: "#B0BFA1")
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .cornerRadius(15) // Round only left corners
+                                .cornerRadius(15)
                                     
                             Text("RESULT :")
                                 .foregroundColor(.black)
                                 .padding()
                         }
-                        .frame(width: UIScreen.main.bounds.width * 0.27) // 30% width of the card
+                        .frame(width: UIScreen.main.bounds.width * 0.27)
 
                         // Right side text
                         Text(viewModel.decisionTitle)

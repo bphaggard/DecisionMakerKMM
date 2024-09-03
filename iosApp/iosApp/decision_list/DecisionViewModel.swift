@@ -9,83 +9,89 @@
 import Foundation
 import shared
 
-extension DecisionListScreen {
-    @MainActor class DecisionViewModel: ObservableObject {
-        private var decisionDataSource: DecisionDataSource?
+@MainActor // Ensure all methods run on the main thread
+class DecisionViewModel: ObservableObject {
+    private var decisionDataSource: DecisionDataSource?
+    
+    private var decisionId: Int64? = nil
+    @Published var decisionValue = "" // Updated to ensure SwiftUI binding works
+    @Published private(set) var filteredDecisions = [Decision]()
+    @Published var decisionTitle = "" // Updated for the result display
+    
+    init(decisionDataSource: DecisionDataSource? = nil) {
+        self.decisionDataSource = decisionDataSource
+        loadDecisions()
+    }
+    
+    func saveDecision() {
+        guard !decisionValue.isEmpty else { return }
         
-        private var decisionId: Int64? = nil
-        @Published var decisionTitle = ""
-        @Published var decisionValue: String = ""
-        
-        private var decisions = [Decision]()
-        @Published private(set) var filteredDecisions = [Decision]()
-        
-        init(decisionDataSource: DecisionDataSource? = nil) {
-            self.decisionDataSource = decisionDataSource
-            loadDecisions() // Load decisions on initialization
-        }
-        
-        func saveDecision() {
-            guard !decisionTitle.isEmpty else { return } // Ensure title is not empty
-            
-            let decision = Decision(id: decisionId?.asKotlinLong(), title: decisionValue)
-            decisionDataSource?.insertDecision(decision: decision, completionHandler: { [weak self] error in
-                if let error = error {
-                    print("Failed to save decision: \(error.localizedDescription)")
-                } else {
-                    self?.decisionTitle = "" // Clear the title
-                    self?.loadDecisions() // Reload the list after saving
+        let decision = Decision(id: decisionId?.asKotlinLong(), title: decisionValue)
+        decisionDataSource?.insertDecision(decision: decision) { [weak self] error in
+            guard let self = self else { return }
+            if let error = error {
+                print("Failed to save decision: \(error.localizedDescription)")
+            } else {
+                DispatchQueue.main.async {
+                    self.decisionValue = ""
+                    self.loadDecisions()
                 }
-            })
+            }
         }
-        
-        func loadDecisions() {
-            decisionDataSource?.getAllDecisions(completionHandler: { [weak self] decisions, error in
-                if let error = error {
-                    print("Failed to load decisions: \(error.localizedDescription)")
-                } else {
-                    self?.decisions = decisions ?? []
-                    self?.filteredDecisions = self?.decisions ?? []
-                }
-            })
+    }
+    
+    func loadDecisions() {
+        decisionDataSource?.getAllDecisions { [weak self] decisions, error in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.filteredDecisions = decisions ?? []
+            }
         }
-        
-        func deleteDecisionById(id: Int64?) {
-            
-            decisionDataSource?.deleteDecisionById(id: id!, completionHandler: { [weak self] error in
+    }
+    
+    func deleteDecisionById(id: Int64?) {
+        guard let id = id else { return }
+        decisionDataSource?.deleteDecisionById(id: id) { [weak self] error in
+            DispatchQueue.main.async {
                 if let error = error {
                     print("Failed to delete decision: \(error.localizedDescription)")
                 } else {
-                    self?.loadDecisions()
+                    print("Successfully deleted decision with ID: \(id)")
+                    self?.loadDecisions() // Reload decisions after deletion
                 }
-            })
-        }
-        
-        func deleteAllDecisions() {
-            decisionDataSource?.deleteAllDecisions(completionHandler: { [weak self] error in
-                if let error = error {
-                    print("Failed to delete all decisions: \(error.localizedDescription)")
-                } else {
-                    self?.loadDecisions() // Reload after deletion
-                }
-            })
-        }
-        
-        func getRandomDecision() {
-            decisionDataSource?.getRandomDecision(completionHandler: { [weak self] decisionTitle, error in
-                            if let error = error {
-                                print("Failed to get random decision: \(error.localizedDescription)")
-                            } else {
-                                self?.decisionTitle = decisionTitle ?? "No decision selected"
-                            }
-                        })
-        }
-        
-        func setDecisionDataSource(decisionDataSource: DecisionDataSource) {
-            self.decisionDataSource = decisionDataSource
+            }
         }
     }
+    
+    func deleteAllDecisions() {
+        decisionDataSource?.deleteAllDecisions { [weak self] error in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.loadDecisions()
+                self.decisionTitle = ""
+            }
+        }
+    }
+    
+    func getRandomDecision() {
+        decisionDataSource?.getRandomDecision { [weak self] decisionTitle, error in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Failed to get random decision: \(error.localizedDescription)")
+                } else {
+                    self.decisionTitle = decisionTitle ?? "No decision selected"
+                }
+            }
+        }
+    }
+    
+    func setDecisionDataSource(decisionDataSource: DecisionDataSource) {
+        self.decisionDataSource = decisionDataSource
+        loadDecisions()
+    }
 }
+
 
 // Helper extension to convert Int64 to KotlinLong
 extension Int64 {
