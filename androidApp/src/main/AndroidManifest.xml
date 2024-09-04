@@ -3,6 +3,7 @@
 
     <application
         android:name=".DecisionApp"
+        android:icon="@mipmap/ic_launcher_foreground"
         android:allowBackup="false"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
