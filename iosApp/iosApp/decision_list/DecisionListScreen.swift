@@ -22,7 +22,7 @@ struct DecisionListScreen: View {
     }
     
     var body: some View {
-        VStack {
+        ScrollView {
             ZStack {
                 AppBar()
             }
@@ -48,7 +48,6 @@ struct DecisionListScreen: View {
                             .padding(.horizontal, 20)
                             .labelStyle(.iconOnly)
                             .foregroundColor(.black)
-
                     }
                 )
             Spacer(minLength: 10)
@@ -144,5 +143,6 @@ struct AppBar: View {
         Text("Easy Decision")
             .font(.title2)
             .fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
+            .foregroundColor(.black)
     }
 }

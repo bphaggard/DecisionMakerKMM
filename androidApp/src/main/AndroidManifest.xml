@@ -3,6 +3,7 @@
 
     <application
         android:name=".DecisionApp"
+        android:label="Easy Decision"
         android:icon="@mipmap/ic_launcher_foreground"
         android:allowBackup="false"
         android:supportsRtl="true"
